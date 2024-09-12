@@ -152,7 +152,27 @@ func SaveRefreshToken(collectionName string,refreshToken string) error{
 }
 
 func DeleteRefreshToken(collectionName string ,refreshToken string)error{
-	
+	var ctx,cancel = context.WithTimeout(context.Background(),100*time.Second);
+
+
+	 var collection *mongo.Collection = GetCollectionByName(collectionName);
+
+	 result,err := collection.DeleteOne(ctx,bson.M{"refresh_token":refreshToken},);
+	defer cancel();
+
+	 if err!=nil{
+		log.Println("DeleteRefreshToken-> something went wrong 1");
+		log.Fatal(err);
+		return err;
+	 }
+
+	 if result.DeletedCount==0{
+		log.Println("Refresh token Document not found to delete");
+	 }else{
+		log.Println("Refresh token deleted");
+	 }
+
+	 return nil;
 }
 
 

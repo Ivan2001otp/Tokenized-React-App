@@ -326,6 +326,12 @@ func UpdateAuthToken(refreshTokenString string,oldAuthTokenString string)(newAut
 
 	//if refresh token is expired ,delete it.
 	log.Println("Refresh token expired")
-	db.DeleteRefreshToken(shared.RefreshTokenIDs,refreshClaims.StandardClaims.Id);
-	return "","",errors.New("Unauthorized!")
+	err = db.DeleteRefreshToken(shared.RefreshTokenIDs,refreshClaims.StandardClaims.Id);
+	
+	if err!=nil{
+		log.Println("UpdateAuthToken->Error 6")
+		log.Fatal(err);
+	}
+
+	return "","",errors.New("unauthorized")
 }
