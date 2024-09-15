@@ -5,10 +5,12 @@ go 1.21.5
 require (
 	github.com/golang-jwt/jwt/v5 v5.2.1
 	go.mongodb.org/mongo-driver v1.16.1
+	go.uber.org/ratelimit v0.3.1
 	golang.org/x/crypto v0.22.0
 )
 
 require (
+	github.com/benbjohnson/clock v1.3.0 // indirect
 	github.com/golang/snappy v0.0.4 // indirect
 	github.com/klauspost/compress v1.13.6 // indirect
 	github.com/montanaflynn/stats v0.7.1 // indirect

@@ -20,8 +20,8 @@ import (
 const (
 	refreshTokenValidTime = time.Hour * 72
 	authTokenValidTime    = time.Minute * 15
-	privateKeyPath        = "keys/app_rsa"
-	publicKeyPath         = "keys/app_rsa.pub"
+	privateKeyPath        = "keys/private_key.pem"
+	publicKeyPath         = "keys/public_key.pem"
 	emptyString           = ""
 )
 
@@ -30,7 +30,7 @@ var (
 	verifyKey *rsa.PublicKey
 )
 
-func initJWT()error{
+func initJWT() error{
 	signBytes,err := os.ReadFile(privateKeyPath)
 
 	if err!=nil{
@@ -413,5 +413,94 @@ func generateCSRFSecret()(string,error){
 	}
 
 	return base64.URLEncoding.EncodeToString(bytes),err;
+}
 
+func CheckAndRefreshToken(oldAuthTokenString,
+	oldRefreshTokenString,
+	oldCSRFString string)(newAuthTokenString,
+		newRefreshTokenString,
+		newCSRFString string,err error){
+
+			if oldCSRFString==""{
+				log.Println("CheckAndRefreshToken->No CSRF token")
+				err = errors.New("Unauthorized");
+				return;
+			}
+
+			authToken,err := jwt.ParseWithClaims(oldAuthTokenString,&SignedDetails{},
+				func (token *jwt.Token)(interface{},error){
+					return verifyKey,nil;
+				});
+			
+				if err!=nil{
+					return;
+				}
+
+				authTokenClaims,ok := authToken.Claims.(*SignedDetails)
+
+				if !ok{
+				log.Println("CheckAndRefreshToken->Auth Token is Invalid!")
+
+					err = errors.New("Auth Token is Invalid!");
+					return;
+				}
+
+				if oldCSRFString!=authTokenClaims.CSRFtoken{
+					log.Println("CheckAndRefreshToken->csrf token do not match jwt");
+					err = errors.New("Unauthorized:CSRF token doesn't match jwt");
+					return;
+				}
+
+				if authToken.Valid{
+					log.Println("Auth Token is valid")
+					newCSRFString = authTokenClaims.CSRFtoken;
+
+					newRefreshTokenString,err = updateRefreshTokenExpire(oldRefreshTokenString)
+					newAuthTokenString = oldAuthTokenString
+					return
+				}else if v,ok := err.(jwt.ClaimsValidator);ok{
+					log.Println("CheckAndRefreshToken->Auth Token is not valid")
+					expires_at,expire_err := v.GetExpirationTime()
+
+					if expire_err!=nil{
+					log.Println("CheckAndRefreshToken->auth token expired")
+
+						panic(expire_err)
+						
+					}
+
+					if expires_at.Unix() < time.Now().Unix(){
+						log.Println("Auth token expired")
+						newAuthTokenString,newCSRFString,err = updateAuthTokenString(oldRefreshTokenString,oldAuthTokenString)
+
+						if err!=nil{
+						log.Println("CheckAndRefreshToken->Something went wrong while creating newauth token")
+						log.Fatal(err)	
+						return;
+						}
+
+						newRefreshTokenString,err = updateRefreshTokenExpire(oldRefreshTokenString)
+
+						if err!=nil{
+							
+						log.Println("CheckAndRefreshToken->Something went wrong while creating new refresh token")
+						log.Fatal(err)
+							return;
+						}
+						
+						newRefreshTokenString,err = updateRefreshTokenCSRF(newRefreshTokenString,newCSRFString)
+
+						return;
+					}else{
+
+						log.Println("CheckAndRefreshToken->Error in auth Token")
+						err = errors.New("error in auth token")
+						return;
+					}
+				}else{
+					log.Println("error in auth token")
+					log.Println("CheckAndRefreshToken->Error in auth Token")
+					err = errors.New("error in auth token")
+					return;
+				}
 }
