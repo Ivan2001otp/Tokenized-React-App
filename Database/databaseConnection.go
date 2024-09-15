@@ -1,6 +1,7 @@
 package database
 
 import (
+	model "Backend/Model"
 	"context"
 	"log"
 	"os"
@@ -126,6 +127,31 @@ func SetRefreshTokenAsEmpty(collectionName,last_name,user_name,email string,) (e
 	
 }
 
+func FetchUserCountByCredential(collectionName,email,user_name string,)(int64,error){
+	var ctx,cancel = context.WithTimeout(context.Background(),100*time.Second);
+
+	var collection *mongo.Collection = GetCollectionByName(collectionName);
+
+	filter := bson.M{
+		"$or":[]interface{}{
+			bson.M{"user_name":user_name},
+			bson.M{"email":email},
+		},
+	}
+
+	count,err := collection.CountDocuments(ctx,filter,)
+
+	defer cancel();
+
+	if err!=nil{
+		log.Panic(err)
+		return -1,err;
+	}	
+
+	log.Println("Count of documents is ",count)
+	return count,nil;
+}
+
 func DeleteUserByCredentials(collectionName,user_name,last_name,email string)(error){
 	var ctx,cancel = context.WithTimeout(context.Background(),100*time.Second);
 
@@ -143,6 +169,27 @@ func DeleteUserByCredentials(collectionName,user_name,last_name,email string)(er
 
 	log.Println("The number of deleted documents is ",deleteResult.DeletedCount)
 	return nil;
+}
+
+func SaveUserCredential(collectionName string,newUser model.User,)(interface{},error){
+	var ctx,cancel = context.WithTimeout(context.Background(),100*time.Second)
+
+	var collection *mongo.Collection = GetCollectionByName(collectionName)
+
+	result,err := collection.InsertOne(ctx,newUser)
+
+	defer cancel();
+
+	if err!=nil{
+		log.Println("Could not save new user ,in signup!");
+		log.Fatal(err)
+		return nil,err
+	}
+	
+	log.Println("Inserted ID : ",result.InsertedID);
+
+	return result.InsertedID,nil;
+
 }
 /*
 func FetchUserById(uuid string,collectionName string) (*models.User,error){
@@ -253,7 +300,6 @@ func FetchUserByName(userName string,collectionName string)(*models.User,error){
 		log.Println("FetchUserByName->the username does not exists");
 		return nil,err;
 	}
-
 	return &foundUser,nil;
 }
 */

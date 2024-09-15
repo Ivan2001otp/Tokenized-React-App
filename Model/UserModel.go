@@ -13,7 +13,7 @@ type User struct {
 	User_name 	string	`json:"user_name"  validate:"required,min=3,max=30"`
 	Email		string		`json:"email"  validate:"required,email"`
 	Password	string		`json:"password" validate:"required,min=3"`
-	Phone		string		`json:"phone"	validate:"required"`
+	Phone		string		`json:"phone" validate:"required,max=10"`
 
 	Auth_token		 string 		`json:"auth_token"`
 	Refresh_token	 string	`json:"refresh_token"`
