@@ -1,13 +1,12 @@
 package database
 
 import (
-	model "Backend/Model"
-	models "Backend/Model"
 	"context"
 	"log"
 	"os"
 	"time"
 
+	//"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -83,6 +82,50 @@ func GetCollectionByName(collectionName string) *mongo.Collection{
 	return client.Database(dbName).Collection(collectionName)
 }
 
+func FetchRefreshTokenForAuthtokenUpdate(collectionName,user_name,email,last_name string,)(string,error){
+	var ctx,cancel = context.WithTimeout(context.Background(),100*time.Second);
+
+	var fetchedRefreshToken string;
+
+	var collection *mongo.Collection = GetCollectionByName(collectionName);
+
+	filter := bson.M{
+		"user_name":user_name,
+		"last_name":last_name,
+		"email":email,
+	}
+
+	var result bson.M;
+	err := collection.FindOne(ctx,filter).Decode(&result)
+	defer cancel();
+
+	if err!=nil{
+		log.Println("FetchRefreshTokenForAuthtokenUpdate->err1")
+		log.Fatal(err);
+		return "",err;
+	}
+
+	fetchedRefreshToken = result["refresh_token"].(string)
+
+	return fetchedRefreshToken,nil;
+}
+
+func SetRefreshTokenAsEmpty(collectionName,last_name,user_name,email string,) (error){
+	var ctx,cancel = context.WithTimeout(context.Background(),100*time.Second);
+
+	var collection *mongo.Collection = GetCollectionByName(collectionName);
+
+	filter := bson.M{"user_name":user_name,"last_name":last_name,"email":email}
+	update := bson.M{"$set":bson.M{"refresh_token":""}}
+
+	_,err := collection.UpdateOne(ctx,filter,update)
+
+	defer cancel();
+
+	return err;
+	
+}
+/*
 func FetchUserById(uuid string,collectionName string) (*models.User,error){
 	var ctx,cancel = context.WithTimeout(context.Background(),100*time.Second);
 
@@ -176,6 +219,7 @@ func DeleteRefreshToken(collectionName string ,refreshToken string)error{
 }
 
 
+
 func FetchUserByName(userName string,collectionName string)(*models.User,error){
 	var ctx,cancel = context.WithTimeout(context.Background(),100*time.Second);
 
@@ -193,3 +237,4 @@ func FetchUserByName(userName string,collectionName string)(*models.User,error){
 
 	return &foundUser,nil;
 }
+*/
