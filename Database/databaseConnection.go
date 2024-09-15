@@ -125,6 +125,25 @@ func SetRefreshTokenAsEmpty(collectionName,last_name,user_name,email string,) (e
 	return err;
 	
 }
+
+func DeleteUserByCredentials(collectionName,user_name,last_name,email string)(error){
+	var ctx,cancel = context.WithTimeout(context.Background(),100*time.Second);
+
+	var collection *mongo.Collection = GetCollectionByName(collectionName)
+	filter := bson.M{"user_name":user_name,"last_name":last_name,"email":email};
+
+	deleteResult,err := collection.DeleteOne(ctx,filter,);
+	defer cancel();
+
+	if err!=nil{
+		log.Println("DeleteUserByCredentials -> could not delete user!");
+		log.Panic(err);
+		return err;
+	}
+
+	log.Println("The number of deleted documents is ",deleteResult.DeletedCount)
+	return nil;
+}
 /*
 func FetchUserById(uuid string,collectionName string) (*models.User,error){
 	var ctx,cancel = context.WithTimeout(context.Background(),100*time.Second);
