@@ -24,7 +24,7 @@ func Authenticator(next http.Handler) http.Handler{
 			json.NewEncoder(w).Encode(status{"error":authErr.Error()})
 			return;
 		}else if authErr!=nil{
-			log.Panic("panic : %+v",authErr)
+			log.Panicf("panic : %+v",authErr)
 			helper.NullifyTokenCookies(&w,r)
 			w.WriteHeader(http.StatusInternalServerError)
 			json.NewEncoder(w).Encode(status{"error":authErr.Error()})
@@ -41,7 +41,7 @@ func Authenticator(next http.Handler) http.Handler{
 			json.NewEncoder(w).Encode(status{"error":refreshErr.Error()})
 			return;
 		}else if refreshErr!=nil{
-			log.Panic("panic:%+v",refreshErr)
+			log.Panicf("panic:%+v",refreshErr)
 			helper.NullifyTokenCookies(&w,r)
 			w.WriteHeader(http.StatusInternalServerError)
 			json.NewEncoder(w).Encode(status{"status":refreshErr.Error()})

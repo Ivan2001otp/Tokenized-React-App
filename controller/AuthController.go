@@ -158,6 +158,8 @@ func SignIn() http.HandlerFunc{
 		json.NewEncoder(w).Encode(foundUser)
 	}
 }
+
+
 func SignOut() http.HandlerFunc{
 	return func(w http.ResponseWriter, r *http.Request) {
 		log.Println("deleted cookies")

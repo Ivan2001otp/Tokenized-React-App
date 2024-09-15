@@ -30,7 +30,7 @@ var (
 	verifyKey *rsa.PublicKey
 )
 
-func initJWT() error{
+func InitJWT() error{
 	signBytes,err := os.ReadFile(privateKeyPath)
 
 	if err!=nil{
