@@ -189,7 +189,24 @@ func SaveUserCredential(collectionName string,newUser model.User,)(interface{},e
 	log.Println("Inserted ID : ",result.InsertedID);
 
 	return result.InsertedID,nil;
+}
 
+func FetchUserBySpecificCredential(collectionName,credential string)(*model.User,error){
+	var ctx,cancel = context.WithTimeout(context.Background(),100*time.Second)
+
+	var user model.User
+
+	var collection *mongo.Collection = GetCollectionByName(collectionName)
+	err := collection.FindOne(ctx,bson.M{"email":credential}).Decode(&user)
+
+	defer cancel();
+
+	if err!=nil{
+		log.Panic(err)
+		return nil,err;
+	}
+
+	return &user,nil;
 }
 /*
 func FetchUserById(uuid string,collectionName string) (*models.User,error){
