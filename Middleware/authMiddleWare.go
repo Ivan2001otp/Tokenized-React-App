@@ -11,16 +11,20 @@ import (
 
 type status map[string]interface{}
 
+
+
 func Authenticator(next http.Handler) http.Handler{
 	return http.HandlerFunc(func(w http.ResponseWriter,r *http.Request){
 		
 		log.Println("Entered in auth restricted section")
+
 		authCookie,authErr := r.Cookie(shared.AUTH_TOKEN);
 
 		if authErr == http.ErrNoCookie{
 			log.Println("Unauthorized attempt! No auth cookie");
 			helper.NullifyTokenCookies(&w,r)
 			w.WriteHeader(http.StatusUnauthorized)
+			log.Println(authErr.Error())
 			json.NewEncoder(w).Encode(status{"error":authErr.Error()})
 			return;
 		}else if authErr!=nil{
@@ -48,8 +52,11 @@ func Authenticator(next http.Handler) http.Handler{
 			return;
 		}
 
+
 		//get the csrftoken
+		log.Println("here1")
 		requestCSRFString := helper.GrabCSRFfromRequest(r);
+		log.Println("Csrf - ",requestCSRFString)
 
 		authTokenString,refreshTokenString,csrfString,err := helper.CheckAndRefreshToken(authCookie.Value,refreshCookie.Value,requestCSRFString)
 
@@ -71,7 +78,7 @@ func Authenticator(next http.Handler) http.Handler{
 		w.Header().Set("Access-Control-Allow-Origin","*");
 		helper.SetAuthAndRefreshCookies(&w,authTokenString,refreshTokenString)
 
-		w.Header().Set("X-CSRF-Token",csrfString);
+		w.Header().Set(shared.X_CSRF_Token,csrfString);
 
 		next.ServeHTTP(w,r)
 	})

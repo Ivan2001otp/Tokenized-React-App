@@ -56,7 +56,7 @@ func InitJWT() error{
 		return err;
 	}
 
-	verifyKey,err := jwt.ParseRSAPublicKeyFromPEM(verifyBytes)
+	verifyKey,err = jwt.ParseRSAPublicKeyFromPEM(verifyBytes)
 
 	if err!=nil{
 		log.Println("Error while parsing public key from PEM!");
@@ -64,8 +64,8 @@ func InitJWT() error{
 		return err;
 	}
 
-	log.Println("VerifyKey : ",verifyKey)
-	log.Println("Signkey : ",signKey);
+	log.Println("VerifyKey generated ",)
+	log.Println("Signkey generated",);
 
 	return nil;
 }
@@ -256,11 +256,17 @@ func updateRefreshTokenCSRF(oldRefreshTokenString,newCSRFString string)(newRefre
 }
 
 func GrabCSRFfromRequest(r *http.Request) string{
-	csrfFromFrom := r.FormValue("X-CSRF-Token")
+	csrfFromFrom := r.FormValue(shared.X_CSRF_Token)
+
+	log.Println(r)
+	log.Println("postman-token:",r.Header.Get(shared.POSTMAN_TOKEN))
+	
 	if csrfFromFrom!=""{
+		log.Println("The csrf token is1 ->",csrfFromFrom)
 		return csrfFromFrom;
 	}else{
-		return r.Header.Get("X-CSRF-Token")
+		log.Println("The csrf token is2 ->",r.Header.Get(shared.X_CSRF_Token))
+		return r.Header.Get(shared.X_CSRF_Token)
 	}
 }
 
@@ -278,11 +284,13 @@ func SetAuthAndRefreshCookies(w *http.ResponseWriter,authTokenString ,refreshTok
 	authCookie := http.Cookie{
 		Name: shared.AUTH_TOKEN,
 		Value:authTokenString,
+		// SameSite: http.SameSiteLaxMode,
 		HttpOnly: true,
-		Secure: true,
+		// Secure: true,
+		Path:"/",
+		Domain: "localhost:8000",
 	}
 
-	authCookie.SameSite=http.SameSiteLaxMode
 
 	http.SetCookie(*w,&authCookie);
 
@@ -291,10 +299,11 @@ func SetAuthAndRefreshCookies(w *http.ResponseWriter,authTokenString ,refreshTok
 		Name:shared.REFRESH_TOKEN,
 		Value: refreshTokenString,
 		HttpOnly: true,
-		Secure: true,
+		Path: "/",
+		Domain: "localhost:8000",
+		// SameSite: http.SameSiteLaxMode,
+		// Secure: true,
 	}
-
-	refreshCookie.SameSite=http.SameSiteLaxMode
 
 	http.SetCookie(*w,&refreshCookie);
 }
@@ -305,6 +314,7 @@ func NullifyTokenCookies(w *http.ResponseWriter,r *http.Request){
 		Value: "",
 		Expires: time.Now().Add(-100*time.Hour),
 		HttpOnly: true,
+		
 	}
 
 	http.SetCookie(*w,&AuthCookie)
@@ -358,6 +368,7 @@ func createRefreshTokenString(first_name,last_name,user_name,email,user_id,
 			Email: email,
 			User_ID: user_id,
 			User_type: user_type,
+			CSRFtoken: csrfToken,
 			RegisteredClaims: jwt.RegisteredClaims{
 				ExpiresAt: jwt.NewNumericDate(time.Now().Add(refreshTokenValidTime)),
 			},
@@ -433,6 +444,7 @@ func CheckAndRefreshToken(oldAuthTokenString,
 				});
 			
 				if err!=nil{
+					log.Println("CheckAndRefreshToken->claims jwt could not get")
 					return;
 				}
 
@@ -441,14 +453,14 @@ func CheckAndRefreshToken(oldAuthTokenString,
 				if !ok{
 				log.Println("CheckAndRefreshToken->Auth Token is Invalid!")
 
-					err = errors.New("Auth Token is Invalid!");
-					return;
+					err = errors.New("auth token is invalid");
+					return "","","",err;
 				}
 
 				if oldCSRFString!=authTokenClaims.CSRFtoken{
 					log.Println("CheckAndRefreshToken->csrf token do not match jwt");
 					err = errors.New("Unauthorized:CSRF token doesn't match jwt");
-					return;
+					return "","","",err;
 				}
 
 				if authToken.Valid{

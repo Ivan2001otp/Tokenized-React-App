@@ -4,23 +4,44 @@ import (
 	model "Backend/Model"
 	"context"
 	"log"
-	"os"
+	
 	"time"
 
 	//"go.mongodb.org/mongo-driver/bson"
+	"github.com/joho/godotenv"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-var client *mongo.Client
+var client *mongo.Client = Connect();
+var envFile map[string]string = *ReadEnvFile()
 
-func Connect() error{
-	if client!=nil{
-		return nil;
+func ReadEnvFile()(*map[string]string){
+	envFile,err := godotenv.Read(".env")
+	if err!=nil{
+		log.Fatal("Error loading .env file!");
+	}else{
+	// log.Println(envFile)
+	log.Println(envFile["MONGO_URL"])
 	}
 
-	mongoUrl := os.Getenv("MONGO_URL")
+	return &envFile;
+}
+
+func Connect() *mongo.Client{
+	
+
+	// envFile,err := godotenv.Read(".env")
+	// if err!=nil{
+	// 	log.Fatal("Error loading .env file!");
+	// }else{
+	// // log.Println(envFile)
+	// log.Println(envFile["MONGO_URL"])
+	// }
+
+	// mongoUrl := os.Getenv("MONGO_URL")
+	mongoUrl := envFile["MONGO_URL"]
 
 	if mongoUrl==""{
 		log.Panic("Mongo Url not found!");
@@ -32,7 +53,8 @@ func Connect() error{
 
 
 	if err!=nil{
-		return err;
+		log.Println("MongoURL  invalid!")
+		log.Fatal(err)
 	}
 
 	ctx,cancel := context.WithTimeout(context.Background(),10*time.Second);
@@ -40,13 +62,19 @@ func Connect() error{
 	defer cancel();
 
 	err = client.Connect(ctx)
+
 	if err!=nil{
-		return err;
+		
+		log.Fatal("Error while connecting to db!");
+	
+		
 	}
 
 	log.Println("Mongodb connected successfully!");
-	return nil;
+	return client;
 }
+
+
 
 func Close() error{
 	if client==nil{
@@ -70,16 +98,17 @@ func Close() error{
 func GetCollectionByName(collectionName string) *mongo.Collection{
 	if client==nil{
 		log.Println("GetCollectionByName->Mongo client not connected")
-		log.Panic("Mongo client not connected");
-		return nil;
+		log.Fatal("Mongo client not connected");
+		
 	}
 
-	var dbName string = os.Getenv("DATABASE_NAME")
+	var dbName string = envFile["DATABASE_NAME"]
 
 	if dbName==""{
 		log.Panic("Database Name not found !");
 		return nil;
 	}
+
 	return client.Database(dbName).Collection(collectionName)
 }
 
@@ -193,7 +222,8 @@ func SaveUserCredential(collectionName string,newUser model.User,)(interface{},e
 
 func FetchUserBySpecificCredential(collectionName,credential string)(*model.User,error){
 	var ctx,cancel = context.WithTimeout(context.Background(),100*time.Second)
-
+	log.Println("Invoked FetchUserBySpecificCredential")
+	
 	var user model.User
 
 	var collection *mongo.Collection = GetCollectionByName(collectionName)
@@ -202,7 +232,7 @@ func FetchUserBySpecificCredential(collectionName,credential string)(*model.User
 	defer cancel();
 
 	if err!=nil{
-		log.Panic(err)
+		log.Println(err)
 		return nil,err;
 	}
 

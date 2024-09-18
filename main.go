@@ -1,20 +1,32 @@
 package main
 
 import (
+	database "Backend/Database"
 	"Backend/Middleware"
 	"Backend/controller"
 	"Backend/helper"
+	"Backend/shared"
 	"fmt"
 	"log"
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
+	"go.mongodb.org/mongo-driver/mongo"
 )
 
-func main(){
-fmt.Println("hi")
 
-err := helper.InitJWT()
+
+var userCollection *mongo.Collection = database.GetCollectionByName(shared.USERS);
+func main(){
+
+	fmt.Println("hi")
+
+	err := helper.InitJWT()
+// database.Connect();
+defer database.Close();
+
+
+
 
 
 if err!=nil{
@@ -40,4 +52,5 @@ err = http.ListenAndServe(":8000",router)
 if err!=nil{
 	log.Fatal("Error starting the server : ",err)
 }
+
 }

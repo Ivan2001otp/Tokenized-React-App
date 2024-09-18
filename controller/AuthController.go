@@ -96,7 +96,7 @@ func SignUp() http.HandlerFunc{
 		log.Println("Saved userid ",result)
 
 		helper.SetAuthAndRefreshCookies(&w,authTokenString,refreshTokenString);
-		w.Header().Set("X-CSRF-Token",csrfString)
+		w.Header().Set(shared.X_CSRF_Token,csrfString)
 
 		w.WriteHeader(http.StatusOK)
 		json.NewEncoder(w).Encode(status{"InsertID":user.User_ID})
@@ -110,12 +110,12 @@ func SignIn() http.HandlerFunc{
 	return func(w http.ResponseWriter,r *http.Request){
 		//take only email and password during login.
 		var user model.User;
-
 		if err:= json.NewDecoder(r.Body).Decode(&user);err!=nil{
 			w.WriteHeader(http.StatusBadRequest)
 			json.NewEncoder(w).Encode(status{"error":"invalid json formt . "+err.Error()})
 			return;
 		}
+
 
 		if user.Email=="" || user.Password==""{
 			w.WriteHeader(http.StatusBadRequest);
@@ -127,9 +127,11 @@ func SignIn() http.HandlerFunc{
 		//fetch the user by mail.
 		foundUser,err1 := database.FetchUserBySpecificCredential(shared.USERS,user.Email)
 
+
 		if err1!=nil{
 			w.WriteHeader(http.StatusInternalServerError);
-			json.NewEncoder(w).Encode(status{"error":err1.Error()})
+			log.Println(err1.Error())
+			json.NewEncoder(w).Encode(status{"error":"user not registered."})
 			return;
 		}
 
@@ -151,7 +153,7 @@ func SignIn() http.HandlerFunc{
 
 		helper.SetAuthAndRefreshCookies(&w,authToken,refToken);
 
-		w.Header().Set("X-CSRF-Token",csrfString);
+		w.Header().Set(shared.X_CSRF_Token,csrfString);
 
 		w.WriteHeader(http.StatusOK)
 
