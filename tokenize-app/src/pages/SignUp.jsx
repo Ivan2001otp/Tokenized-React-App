@@ -1,9 +1,21 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
+import {  signUpApiCall } from "../services/ApiCaller";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 export const SignUp = () => {
   const navigate = useNavigate();
+
+  //notification
+  const successNotify = (msg) => toast.success(msg, { icon: true });
+  const errorNotify = (err) => toast.error(err, { icon: true });
+
+  //to show loading and success states
+  const [isLoading, setLoading] = useState(false);
+  const [message, setMessage] = useState("");
+
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -21,12 +33,10 @@ export const SignUp = () => {
     setUserType(e.target.value);
   };
 
-  const submitSignUpDetails = (e) => {
+  const submitSignUpDetails = async(e) => {
     e.preventDefault();
-    console.log("Email : ", email);
-    console.log("Password : ", password);
 
-    alert(
+    console.log(
       email +
         " " +
         password +
@@ -41,6 +51,52 @@ export const SignUp = () => {
         " " +
         user_type
     );
+
+    if(email===""){
+        setMessage("error");
+        errorNotify("Email is required!")
+    }if(password===""){
+        setMessage("error");
+        errorNotify("Password is required!")
+
+    }if(first_name===""){
+        setMessage("error");
+        errorNotify("First-Name is required!")
+
+    }if(last_name===""){
+        setMessage("error");
+        errorNotify("Last-Name is required!")
+
+    }if(user_name===""){
+        setMessage("error");
+        errorNotify("UserName is required!")
+
+    }if(phone===""){
+        setMessage("error");
+        errorNotify("Phone is required!")
+
+    }if(user_type===""){
+        setMessage("error");
+        errorNotify("User-Type is required!")
+
+    }
+
+    setLoading(true);
+
+    const response = await signUpApiCall(user_name,first_name,last_name,email,password,phone,user_type);
+
+    if(response===true){
+        console.log("success sign up");
+        setMessage("success");
+        successNotify("Signed Up successfully 🚀");
+    }else{
+        console.log("failure sign up");
+        setMessage("error");
+        errorNotify("Something went wrong");
+    }
+
+    setLoading(false);
+
   };
 
   return (
@@ -60,8 +116,8 @@ export const SignUp = () => {
       <div className="mt-10 sm:mx-auto sm:w-full sm:max-w-sm">
         <form
           className="space-y-6"
-          action="#"
-          method="" //<-change it
+          onSubmit={submitSignUpDetails}
+          method="POST" //<-change it
         >
           {/* username  */}
           <div>
@@ -213,7 +269,12 @@ export const SignUp = () => {
             <input
                 id="phone-id"
                 value={phone}
-                onChange={(e)=>{setPhone(e.target.value);}}
+                type="number"
+                onChange={(e)=>{
+
+                        setPhone(e.target.value);
+                    
+                }}
                 required
                 maxLength={10}
                 minLength={10}
@@ -251,11 +312,11 @@ export const SignUp = () => {
           {/* //button */}
           <div>
             <button
-              onClick={submitSignUpDetails}
               type="submit"
+              disabled={isLoading ? true : false}
               className="flex w-full justify-center rounded-md bg-indigo-600 leading-10 px-3 py-1.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
             >
-              Sign Up
+             {isLoading ? 'Loading...' : 'Sign Up'}
             </button>
           </div>
         </form>
@@ -271,6 +332,7 @@ export const SignUp = () => {
           </a>
         </p>
       </div>
+      {message && <ToastContainer theme="dark" autoClose={3000}/>}
     </div>
   );
 };
