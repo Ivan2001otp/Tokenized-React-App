@@ -284,11 +284,9 @@ func SetAuthAndRefreshCookies(w *http.ResponseWriter,authTokenString ,refreshTok
 	authCookie := http.Cookie{
 		Name: shared.AUTH_TOKEN,
 		Value:authTokenString,
-		// SameSite: http.SameSiteLaxMode,
+		SameSite: http.SameSiteLaxMode,
 		HttpOnly: true,
-		// Secure: true,
-		Path:"/",
-		Domain: "localhost:8000",
+		
 	}
 
 
@@ -299,10 +297,7 @@ func SetAuthAndRefreshCookies(w *http.ResponseWriter,authTokenString ,refreshTok
 		Name:shared.REFRESH_TOKEN,
 		Value: refreshTokenString,
 		HttpOnly: true,
-		Path: "/",
-		Domain: "localhost:8000",
-		// SameSite: http.SameSiteLaxMode,
-		// Secure: true,
+		SameSite: http.SameSiteLaxMode,
 	}
 
 	http.SetCookie(*w,&refreshCookie);
@@ -314,7 +309,7 @@ func NullifyTokenCookies(w *http.ResponseWriter,r *http.Request){
 		Value: "",
 		Expires: time.Now().Add(-100*time.Hour),
 		HttpOnly: true,
-		
+		SameSite: http.SameSiteLaxMode,
 	}
 
 	http.SetCookie(*w,&AuthCookie)
@@ -325,6 +320,7 @@ func NullifyTokenCookies(w *http.ResponseWriter,r *http.Request){
 		Value: "",
 		Expires: time.Now().Add(-100*time.Hour),
 		HttpOnly: true,
+		SameSite: http.SameSiteLaxMode,
 	}
 
 	http.SetCookie(*w,&RefreshCookie)

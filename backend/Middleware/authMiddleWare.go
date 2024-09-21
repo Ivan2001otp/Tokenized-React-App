@@ -17,7 +17,7 @@ func CorsMiddleware(next http.Handler) http.Handler{
 		w.Header().Set("Access-Control-Allow-Origin","*");
 		w.Header().Set("Access-Control-Allow-Methods","GET, POST, PUT, OPTIONS")
 		w.Header().Set("Access-Control-Allow-Headers","Content-Type, Authorization, X-CSRF-Token")
-		w.Header().Set("Access-Control-Allow-Credentials","true");
+		// w.Header().Set("Access-Control-Allow-Credentials","true");
 
 		if(r.Method==http.MethodOptions){
 			log.Println("Preflight request made");

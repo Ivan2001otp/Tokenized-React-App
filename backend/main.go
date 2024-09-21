@@ -34,6 +34,7 @@ router := chi.NewRouter();
 
 router.Use(middleware.CorsMiddleware);
 
+
 router.Group(func(r chi.Router){
 	r.Post("/register",controller.SignUp())
 	r.Post("/login",controller.SignIn())

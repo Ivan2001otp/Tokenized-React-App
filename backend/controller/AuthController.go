@@ -26,6 +26,17 @@ func Dashboard()http.HandlerFunc{
 	}
 }
 
+func loggy(u model.User){
+	log.Println(u.User_name)
+	log.Println(u.Last_name)
+	log.Println(u.First_name)
+	log.Println(u.Password)
+	log.Println(u.Email)
+	log.Println(u.User_type)
+	log.Println(u.Phone)
+
+}
+
 func SignUp() http.HandlerFunc{
 	return func (w http.ResponseWriter,r *http.Request)  {
 		var user model.User
@@ -33,13 +44,15 @@ func SignUp() http.HandlerFunc{
 		err := json.NewDecoder(r.Body).Decode(&user)
 
 		if err!=nil{
+			log.Println("JSON syntax invalid");
 			w.WriteHeader(http.StatusBadRequest)
 			json.NewEncoder(w).Encode(status{"error":"Invalid json format . "+err.Error()})
 			return;
 		}
-
+		log.Println()
 		err = validate.Struct(user)
-
+		loggy(user)
+		
 		if err!=nil{
 			w.WriteHeader(http.StatusBadRequest)
 			json.NewEncoder(w).Encode(status{"error":"Failed to validate json . "+err.Error()})
@@ -129,9 +142,10 @@ func SignIn() http.HandlerFunc{
 
 
 		if err1!=nil{
-			w.WriteHeader(http.StatusInternalServerError);
+			
 			log.Println(err1.Error())
-			json.NewEncoder(w).Encode(status{"error":"user not registered."})
+			w.WriteHeader(http.StatusInternalServerError);
+			json.NewEncoder(w).Encode(status{"error":"user not registered"})
 			return;
 		}
 
