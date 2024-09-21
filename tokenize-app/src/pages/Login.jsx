@@ -1,12 +1,27 @@
-import React from 'react'
+import React, { useState } from 'react'
 import {useNavigate} from 'react-router-dom'
 
 export const Login = () => {
 
     const navigate = useNavigate();
+
+    //usestates
+    const [email,setEmail] = useState('');
+    const [password,setPassword] = useState('');
     
     const handleNavigateToSignUp=()=>{
         navigate('/signup');
+    }
+
+    const handleLoginEmail=(e)=>{
+        setEmail(e.target.value)
+    }
+    const handleLoginPass = (e) =>{
+        setPassword(e.target.value);
+    }
+    const handleLoginAction=(e)=>{
+        e.preventDefault();
+        alert(email +" "+password);
     }
 
   return (
@@ -49,6 +64,8 @@ export const Login = () => {
                                     name='email'
                                     type='email'
                                     autoComplete="email"
+                                    onChange={handleLoginEmail}
+                                    value={email}
                                     required 
                                     placeholder='abc@gmail.com'
                                     className='block w-full rounded-md border-0 py-1.5 placeholder:px-2 text-gray-900 shadow-sm ring-1 ring-gray-300 placeholder:text-gray-400 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6'
@@ -67,8 +84,10 @@ export const Login = () => {
 
                                     id='password'
                                     name='password'
+                                    value={password}
                                     required
                                     type='password'
+                                    onChange={handleLoginPass}
                                     autoComplete="current-password"
                                     placeholder='****3**'
                                     className='block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 px-4 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6'
@@ -80,6 +99,8 @@ export const Login = () => {
                             <button
                             type='submit'
                             className='flex w-full justify-center rounded-md bg-indigo-600 leading-10 px-3 py-1.5 text-sm font-semibold text-white shadow-sm hover: bg-indigo-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600'
+
+                            onClick={handleLoginAction}
                             >   
                                 Login 
                             </button>
