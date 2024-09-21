@@ -12,19 +12,18 @@ import (
 type status map[string]interface{}
 
 func CorsMiddleware(next http.Handler) http.Handler{
-	csrf:=shared.X_CSRF_Token
+	
 	return http.HandlerFunc(func (w http.ResponseWriter,r *http.Request){
 		w.Header().Set("Access-Control-Allow-Origin","*");
-		w.Header().Set("Access-Control-Allow-Methods","GET ,POST ,PUT ,DELETE ,OPTIONS")
-		w.Header().Set("Access-Control-Allow-Headers","Content-Type,Authorization,"+csrf)
+		w.Header().Set("Access-Control-Allow-Methods","GET, POST, PUT, OPTIONS")
+		w.Header().Set("Access-Control-Allow-Headers","Content-Type, Authorization, X-CSRF-Token")
 		w.Header().Set("Access-Control-Allow-Credentials","true");
 
 		if(r.Method==http.MethodOptions){
 			log.Println("Preflight request made");
-			w.Write([]byte("Preflight Request Made"));
-			w.WriteHeader(http.StatusNoContent)
+			// w.Write([]byte("Preflight Request Made"));
+			w.WriteHeader(http.StatusOK)
 			return;
-
 		}
 	})
 }

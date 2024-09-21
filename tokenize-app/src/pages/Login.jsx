@@ -1,27 +1,71 @@
 import React, { useState } from 'react'
 import {useNavigate} from 'react-router-dom'
+import {ToastContainer,toast} from  'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+// import axios from 'axios'
+import {loginApiCall} from '../services/ApiCaller' 
+
 
 export const Login = () => {
 
+    const successNotify = (msg) => toast.success(msg,{icon:true});
+    const errorNotify = (err) => toast.error(err,{icon:true})
+
     const navigate = useNavigate();
 
-    //usestates
+    //state variables
     const [email,setEmail] = useState('');
     const [password,setPassword] = useState('');
     
+    //to show loading and success states
+    const [isLoading,setLoading] = useState(false);
+    const [message,setMessage]=useState('');
+
+    //handlers
     const handleNavigateToSignUp=()=>{
         navigate('/signup');
     }
-
     const handleLoginEmail=(e)=>{
         setEmail(e.target.value)
     }
     const handleLoginPass = (e) =>{
         setPassword(e.target.value);
     }
-    const handleLoginAction=(e)=>{
+    const  handleSumbit=async(e)=>{
         e.preventDefault();
-        alert(email +" "+password);
+        // alert(email +" "+password);
+
+        if(email===""){
+            setMessage("error");
+            errorNotify("Email is required !")
+            return;
+        }
+        if(password===""){
+            setMessage("error");
+
+            errorNotify("Password is required!");
+            return;
+        }else{
+            console.log("comthi");
+        }
+
+        setLoading(true)
+        
+        try{
+                const response = await loginApiCall(email,password)
+                if(response.status===200 || response.status===201){
+                    setMessage("success");
+                    successNotify(email+' has logged in successfully 🚀');
+                }
+        }catch(e){
+            setMessage("error");
+            errorNotify(e);
+        }finally{
+            setLoading(false);
+        }
+
+    
+       
     }
 
   return (
@@ -45,8 +89,8 @@ export const Login = () => {
             <div className='mt-10 sm:mx-auto sm:w-full sm:max-w-sm'>
                     <form
                     className='space-y-6'
-                    action='#'
-                    method='' //change it
+                    onSubmit={handleSumbit}
+                    method='POST' //change it
                     >   
                         <div>
                             <label
@@ -60,10 +104,9 @@ export const Login = () => {
 
                             >
                                 <input
-                                    id='email'
-                                    name='email'
+                                    id='email-id'
+                                    name='Email'
                                     type='email'
-                                    autoComplete="email"
                                     onChange={handleLoginEmail}
                                     value={email}
                                     required 
@@ -82,13 +125,12 @@ export const Login = () => {
                             <div className='mt-2'>
                                 <input
 
-                                    id='password'
-                                    name='password'
+                                    id='password-id'
+                                    name='Password'
                                     value={password}
                                     required
                                     type='password'
                                     onChange={handleLoginPass}
-                                    autoComplete="current-password"
                                     placeholder='****3**'
                                     className='block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 px-4 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6'
                                 />
@@ -99,13 +141,14 @@ export const Login = () => {
                             <button
                             type='submit'
                             className='flex w-full justify-center rounded-md bg-indigo-600 leading-10 px-3 py-1.5 text-sm font-semibold text-white shadow-sm hover: bg-indigo-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600'
+                            disabled={isLoading ? true : false}
 
-                            onClick={handleLoginAction}
                             >   
-                                Login 
+                               {isLoading ? "Loading..." : "Login"}
                             </button>
                         </div>
                     </form>
+
 
                     <p
                         className='mt-10 text-center text-sm text-gray-500'
@@ -119,8 +162,18 @@ export const Login = () => {
                             Sign Up                 
                         </a>
                     </p>
+
+                    
             </div>
         </div>
+        {
+            message && 
+                <ToastContainer
+                   theme='dark'
+
+                />
+        }
+        
     </div>
   )
 }
