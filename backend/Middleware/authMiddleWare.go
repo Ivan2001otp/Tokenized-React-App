@@ -14,10 +14,13 @@ type status map[string]interface{}
 func CorsMiddleware(next http.Handler) http.Handler{
 	
 	return http.HandlerFunc(func (w http.ResponseWriter,r *http.Request){
-		w.Header().Set("Access-Control-Allow-Origin","*");
-		w.Header().Set("Access-Control-Allow-Methods","GET, POST, PUT, OPTIONS")
-		w.Header().Set("Access-Control-Allow-Headers","Content-Type, Authorization, X-CSRF-Token")
-		// w.Header().Set("Access-Control-Allow-Credentials","true");
+		allowedHeaders := "Accept, Content-Type, Content-Length, Accept-Encoding, Authorization,X-CSRF-Token"
+
+		w.Header().Set("Access-Control-Allow-Origin","http://localhost:5173");
+		w.Header().Set("Access-Control-Allow-Methods","GET,POST,PUT,OPTIONS")
+		w.Header().Set("Access-Control-Allow-Headers",allowedHeaders)
+		w.Header().Set("Access-Control-Expose-Headers","Authorization,X-CSRF-Token")
+		w.Header().Set("Access-Control-Allow-Credentials","true");
 
 		if(r.Method==http.MethodOptions){
 			log.Println("Preflight request made");
@@ -36,6 +39,7 @@ func Authenticator(next http.Handler) http.Handler{
 		log.Println("Entered in auth restricted section")
 
 		authCookie,authErr := r.Cookie(shared.AUTH_TOKEN);
+		log.Println("Auth Token ----> ",authCookie)
 
 		if authErr == http.ErrNoCookie{
 			log.Println("Unauthorized attempt! No auth cookie");
@@ -54,6 +58,8 @@ func Authenticator(next http.Handler) http.Handler{
 
 
 		refreshCookie,refreshErr := r.Cookie(shared.REFRESH_TOKEN)
+		log.Println("refres Token ----> ",refreshCookie)
+
 
 		if refreshErr== http.ErrNoCookie{
 			log.Println("Unauthorized attempt! no refresh cookie")
@@ -71,7 +77,7 @@ func Authenticator(next http.Handler) http.Handler{
 
 
 		//get the csrftoken
-		log.Println("here1")
+		log.Println("here is the csrf token")
 		requestCSRFString := helper.GrabCSRFfromRequest(r);
 		log.Println("Csrf - ",requestCSRFString)
 

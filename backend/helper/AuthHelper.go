@@ -259,7 +259,6 @@ func GrabCSRFfromRequest(r *http.Request) string{
 	csrfFromFrom := r.FormValue(shared.X_CSRF_Token)
 
 	log.Println(r)
-	log.Println("postman-token:",r.Header.Get(shared.POSTMAN_TOKEN))
 	
 	if csrfFromFrom!=""{
 		log.Println("The csrf token is1 ->",csrfFromFrom)
@@ -284,10 +283,12 @@ func SetAuthAndRefreshCookies(w *http.ResponseWriter,authTokenString ,refreshTok
 	authCookie := http.Cookie{
 		Name: shared.AUTH_TOKEN,
 		Value:authTokenString,
-		SameSite: http.SameSiteLaxMode,
+		MaxAge: 3600,
 		HttpOnly: true,
-		
+		Path: "/",
 	}
+
+	log.Println("authcookie is ",authCookie);
 
 
 	http.SetCookie(*w,&authCookie);
@@ -297,8 +298,11 @@ func SetAuthAndRefreshCookies(w *http.ResponseWriter,authTokenString ,refreshTok
 		Name:shared.REFRESH_TOKEN,
 		Value: refreshTokenString,
 		HttpOnly: true,
-		SameSite: http.SameSiteLaxMode,
+		MaxAge: 3600,
+		Path: "/",
 	}
+	log.Println("refresh cookie is ",refreshCookie);
+
 
 	http.SetCookie(*w,&refreshCookie);
 }
@@ -309,7 +313,7 @@ func NullifyTokenCookies(w *http.ResponseWriter,r *http.Request){
 		Value: "",
 		Expires: time.Now().Add(-100*time.Hour),
 		HttpOnly: true,
-		SameSite: http.SameSiteLaxMode,
+		SameSite: http.SameSiteNoneMode,
 	}
 
 	http.SetCookie(*w,&AuthCookie)
@@ -320,7 +324,7 @@ func NullifyTokenCookies(w *http.ResponseWriter,r *http.Request){
 		Value: "",
 		Expires: time.Now().Add(-100*time.Hour),
 		HttpOnly: true,
-		SameSite: http.SameSiteLaxMode,
+		SameSite: http.SameSiteNoneMode,
 	}
 
 	http.SetCookie(*w,&RefreshCookie)
@@ -334,6 +338,8 @@ func CreateNewTokens(user model.User)(authTokenString,refreshTokenString,csrfStr
 		log.Panic(err)
 		return;
 	}
+
+	log.Println("Csrf token : ",csrfString);
 
 	refreshTokenString,err = createRefreshTokenString(user.First_name,user.Last_name,user.User_name,user.Email,user.User_ID,user.User_type,csrfString);
 

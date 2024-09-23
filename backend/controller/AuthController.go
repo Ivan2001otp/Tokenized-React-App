@@ -34,7 +34,6 @@ func loggy(u model.User){
 	log.Println(u.Email)
 	log.Println(u.User_type)
 	log.Println(u.Phone)
-
 }
 
 func SignUp() http.HandlerFunc{
@@ -86,6 +85,7 @@ func SignUp() http.HandlerFunc{
 		user.User_ID = user.ID.Hex();
 
 		authTokenString,refreshTokenString,csrfString,err := helper.CreateNewTokens(user)
+		log.Println("Signup csrf token : ",csrfString);
 		
 		if err!=nil{
 			log.Println("SignUp->err1")
@@ -100,7 +100,7 @@ func SignUp() http.HandlerFunc{
 		//save user entity...
 		result,err := database.SaveUserCredential(shared.USERS,user)
 
-		if err!=nil{
+		if err!=nil{ 
 			w.WriteHeader(http.StatusInternalServerError)
 			json.NewEncoder(w).Encode(status{"error":"Failed to insert data !"})
 			return;
@@ -112,7 +112,7 @@ func SignUp() http.HandlerFunc{
 		w.Header().Set(shared.X_CSRF_Token,csrfString)
 
 		w.WriteHeader(http.StatusOK)
-		json.NewEncoder(w).Encode(status{"InsertID":user.User_ID})
+		json.NewEncoder(w).Encode(status{"InsertID":user.User_ID,"csrf":csrfString})
 
 	}
 }
@@ -159,6 +159,8 @@ func SignIn() http.HandlerFunc{
 
 		authToken,refToken,csrfString,err := helper.CreateNewTokens(*foundUser);
 
+		log.Println("Login token is ",csrfString);
+		
 		if err!=nil{
 			w.WriteHeader(http.StatusInternalServerError)
 			json.NewEncoder(w).Encode(status{"error":err.Error()});
@@ -171,7 +173,7 @@ func SignIn() http.HandlerFunc{
 
 		w.WriteHeader(http.StatusOK)
 
-		json.NewEncoder(w).Encode(foundUser)
+		json.NewEncoder(w).Encode(status{"data":foundUser,"csrf":csrfString});
 	}
 }
 

@@ -42,7 +42,7 @@ router.Group(func(r chi.Router){
 
 router.Group(func(r chi.Router){
 	r.Use(middleware.Authenticator)
-
+	log.Println("authenticator")
 	r.Get("/dashboard",controller.Dashboard())
 	r.Get("/logout",controller.SignOut())
 	r.Get("/deleteUser",controller.DeleteUser())
