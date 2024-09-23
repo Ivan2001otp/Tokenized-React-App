@@ -283,9 +283,9 @@ func SetAuthAndRefreshCookies(w *http.ResponseWriter,authTokenString ,refreshTok
 	authCookie := http.Cookie{
 		Name: shared.AUTH_TOKEN,
 		Value:authTokenString,
-		MaxAge: 3600,
 		HttpOnly: true,
 		Path: "/",
+		MaxAge: 3600,
 	}
 
 	log.Println("authcookie is ",authCookie);
