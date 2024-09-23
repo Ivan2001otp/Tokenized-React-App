@@ -3,7 +3,7 @@ import { replace, useNavigate } from "react-router-dom";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 // import axios from 'axios'
-import { loginApiCall } from "../services/ApiCaller";
+import { loginApiCall,navigateToDashboardApiCall } from "../services/ApiCaller";
 
 export const Login = () => {
   const successNotify = (msg) => toast.success(msg, { icon: true });
@@ -56,7 +56,18 @@ export const Login = () => {
       console.log("Login success !");
       setMessage("success");
       successNotify(email + " has logged in successfully 🚀");
-      navigate('/dashboard',true);
+      // navigate('/dashboard',true);
+
+      //make an api call to invoke the dashboard.
+      const navigateResponse = await navigateToDashboardApiCall();
+
+      if(navigateResponse){
+        navigate('/dashboard',true);
+        console.log("success navigation to dashboard from login !")
+      }else{
+        console.log("failure navigation to dashboard from login !")
+      }
+
     } else {
       console.log("No response font-end");
       setMessage("error");

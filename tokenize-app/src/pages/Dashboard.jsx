@@ -1,13 +1,27 @@
 import React from 'react'
+import {logoutApiCall,deleteUserApiCall} from '../services/ApiCaller'
 
 export const Dashboard = () => {
 
-    function handleLogout(){
-
+    const handleLogout=async()=>{
+        console.log("logout pressed");
+        let logOutResult = await logoutApiCall();
+        if(logOutResult){
+          console.log("User logged out");
+        }else{
+          console.log("logout result is false");
+        }
     }
 
-    function handleDeleteUser(){
-        
+    const handleDeleteUser=async()=>{
+
+      console.log("Invoked handleDeleteUser");
+      let deleteResult = await deleteUserApiCall();
+      if (deleteResult){
+        console.log("User deleted!");
+      }else{
+        console.log("User could not be deleted!");
+      }
     }
 
   return (

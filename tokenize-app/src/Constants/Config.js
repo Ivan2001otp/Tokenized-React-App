@@ -1,3 +1,9 @@
 export const MAIN_URL = "http://localhost:8000"
 export const LOGIN_END_POINT = "/login";
 export const REGISTER_END_POINT="/register"
+export const LOG_OUT="/logout";
+export const DELETE_USER="/deleteUser";
+export const DASH_BOARD="/dashboard";
+export const JWT = 'jwt-token';
+export const CSRF = 'csrf-token';
+export const CSRF_LABEL = 'X-CSRF-Token'

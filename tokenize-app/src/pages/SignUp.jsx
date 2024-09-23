@@ -1,7 +1,7 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
-import {  signUpApiCall } from "../services/ApiCaller";
+import {  signUpApiCall ,navigateToDashboardApiCall} from "../services/ApiCaller";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
@@ -89,6 +89,15 @@ export const SignUp = () => {
         console.log("success sign up");
         setMessage("success");
         successNotify("Signed Up successfully 🚀");
+        //make an api call to invoke the dashboard.
+      const navigateResponse = await navigateToDashboardApiCall();
+
+      if(navigateResponse){
+        navigate('/dashboard',true);
+        console.log("success navigation to dashboard from login !")
+      }else{
+        console.log("failure navigation to dashboard from login !")
+      }
     }else{
         console.log("failure sign up");
         setMessage("error");
