@@ -13,7 +13,7 @@ import {
 //create separate axios instance where u can configure default headers.
 const axiosInstance = axios.create({
   baseURL:MAIN_URL,
-  withCredentials:true,
+  // withCredentials:true,
 });
 
 axiosInstance.interceptors.request.use(
