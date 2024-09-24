@@ -38,6 +38,7 @@ func loggy(u model.User){
 
 func SignUp() http.HandlerFunc{
 	return func (w http.ResponseWriter,r *http.Request)  {
+
 		var user model.User
 
 		err := json.NewDecoder(r.Body).Decode(&user)
@@ -122,6 +123,7 @@ func SignUp() http.HandlerFunc{
 func SignIn() http.HandlerFunc{
 	return func(w http.ResponseWriter,r *http.Request){
 		//take only email and password during login.
+
 		var user model.User;
 		if err:= json.NewDecoder(r.Body).Decode(&user);err!=nil{
 			w.WriteHeader(http.StatusBadRequest)
@@ -180,6 +182,13 @@ func SignIn() http.HandlerFunc{
 
 func SignOut() http.HandlerFunc{
 	return func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Access-Control-Allow-Origin","http://localhost:5173")
+		if(r.Header.Get("X-Csrf-Token")==""){
+			// helper.NullifyTokenCookies(&w,r);
+			w.WriteHeader(http.StatusUnauthorized);
+			json.NewEncoder(w).Encode(status{"error":"no csrf token provided"});
+			return;
+		}
 		log.Println("deleted cookies")
 	 	helper.NullifyTokenCookies(&w,r);
 	}
@@ -187,6 +196,14 @@ func SignOut() http.HandlerFunc{
 
 func DeleteUser() http.HandlerFunc{
 	return func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Access-Control-Allow-Origin","http://localhost:5173")
+		
+		if(r.Header.Get("X-Csrf-Token")==""){
+			// helper.NullifyTokenCookies(&w,r);
+			w.WriteHeader(http.StatusUnauthorized);
+			json.NewEncoder(w).Encode(status{"error":"no csrf token provided"});
+			return;
+		}
 		log.Println("Deleting user")
 		authCookie,authErr := r.Cookie(shared.AUTH_TOKEN)
 

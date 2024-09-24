@@ -7,6 +7,7 @@ require (
 	github.com/go-playground/validator v9.31.0+incompatible
 	github.com/golang-jwt/jwt/v5 v5.2.1
 	github.com/joho/godotenv v1.5.1
+	github.com/rs/cors v1.11.1
 	go.mongodb.org/mongo-driver v1.16.1
 	golang.org/x/crypto v0.22.0
 )
