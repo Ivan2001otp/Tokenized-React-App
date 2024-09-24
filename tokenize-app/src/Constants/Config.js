@@ -6,4 +6,4 @@ export const DELETE_USER="/deleteUser";
 export const DASH_BOARD="/dashboard";
 export const JWT = 'jwt-token';
 export const CSRF = 'csrf-token';
-export const CSRF_LABEL = 'X-CSRF-Token'
+export const CSRF_LABEL = 'X-Csrf-Token'

@@ -1,13 +1,19 @@
 import React from 'react'
 import {logoutApiCall,deleteUserApiCall} from '../services/ApiCaller'
+import {useNavigate} from "react-router-dom";
+
 
 export const Dashboard = () => {
+    const navigate = useNavigate();
+
 
     const handleLogout=async()=>{
         console.log("logout pressed");
         let logOutResult = await logoutApiCall();
         if(logOutResult){
-          console.log("User logged out");
+          alert('Logged out!');
+          // console.log("User logged out");
+          navigate('/login',{replace:true});
         }else{
           console.log("logout result is false");
         }

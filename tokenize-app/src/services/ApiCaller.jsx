@@ -1,4 +1,6 @@
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
+
 import {
   MAIN_URL,
   LOGIN_END_POINT,
@@ -9,16 +11,31 @@ import {
   JWT,CSRF,CSRF_LABEL
 } from "../Constants/config";
 
+// const navigate = useNavigate();
 
 //create separate axios instance where u can configure default headers.
 const axiosInstance = axios.create({
   baseURL:MAIN_URL,
-  // withCredentials:true,
+  withCredentials:true,
+  credentials:'include'
+  
 });
+
+axiosInstance.interceptors.response.use(
+  (config)=>{
+    return config;
+  },
+  async (error)=>{
+    if(error.status===401 && error.response){
+      console.log("invoke api call to get fresh tokens!");
+      // navigate("/error-page",true);
+    }
+  }
+)
 
 axiosInstance.interceptors.request.use(
   (config)=>{
-    const csrfToken = sessionStorage.getItem(CSRF);
+    const csrfToken = localStorage.getItem(CSRF);
     console.log("Stored token : ",csrfToken);
     console.log("headers before ",config.headers);
 
@@ -33,10 +50,23 @@ axiosInstance.interceptors.request.use(
     if(error.response.status===401){
       console.log("Unauthorized 401 error !");
       console.error(error) 
+      if(error.status===401 && error.response){
+        console.log("invoke api call to get fresh tokens!");
+        navigate("/error-page",true);
+      }
     }
     return Promise.reject(error)
   }
 );
+
+axiosInstance.interceptors.response.use(
+  (config)=>config,
+  (err)=>{
+    if(err.response.status===401 && err.response){
+      
+    }
+  }
+)
 
 export const loginApiCall = async (email_, password_) => {
   try {
@@ -52,7 +82,7 @@ export const loginApiCall = async (email_, password_) => {
 
     if (response.status === 200 || response.status === 201) {
       console.log("success-login");
-      sessionStorage.setItem(CSRF,response['data']['csrf']);
+      localStorage.setItem(CSRF,response['data']['csrf']);
       return true;
     }
 
@@ -67,16 +97,17 @@ export const loginApiCall = async (email_, password_) => {
 
 export const navigateToDashboardApiCall = async () => {
   try {
-    let response = await axiosInstance.get(DASH_BOARD)
-    .then((result)=>{
-      console.log("Success in navigation ",result);
-    }).catch((err)=>{
-        console.log("Error in navigation ",err)
-    })
+    let response = await axiosInstance.get(DASH_BOARD);
 
-    console.log(response);
 
-    if (response.status === 200 || response.status === 201) {
+    if(response){
+      console.log(response)
+      console.log("Response is not null")
+    }else{
+      console.log("Response is null")
+    }
+  
+    if (response?.status === 200 || response?.status === 201) {
       console.log("success navigation !");
       return true;
     }
@@ -98,7 +129,7 @@ export const deleteUserApiCall = async () => {
     console.log(response)
     if (response.status === 200 || response.status === 201) {
       console.log("status is 2xx");
-      sessionStorage.clear();
+      localStorage.clear();
       return true;
     }
 
@@ -117,14 +148,13 @@ export const logoutApiCall = async () => {
   try {
     let response = await axiosInstance.get(LOG_OUT);
     console.log(response);
-
+    console.log("response is ",response)
     if (response.status === 201 || response.status === 200) {
       console.log("status is 2xx");
-      sessionStorage.clear();
+      localStorage.clear();
       return true;
     }
-
-    console.log("status was not 2xx");
+    localStorage.clear();
     return false;
   } catch (err) {
     console.log("failed to logout");
@@ -161,7 +191,7 @@ export const signUpApiCall = async (
     if (response.status === 200 || response.status === 201) {
       console.log("success sign up ");
       console.log(response['data']['csrf'])
-      sessionStorage.setItem(CSRF,response['data']['csrf']);
+      localStorage.setItem(CSRF,response['data']['csrf']);
       return true;
     }
 
@@ -170,7 +200,6 @@ export const signUpApiCall = async (
     return false;
   } catch (err) {
     console.log("failure in sign up");
-
     console.error(err);
     return false;
   }

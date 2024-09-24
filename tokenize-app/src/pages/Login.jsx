@@ -2,7 +2,6 @@ import React, { useState } from "react";
 import { replace, useNavigate } from "react-router-dom";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-// import axios from 'axios'
 import { loginApiCall,navigateToDashboardApiCall } from "../services/ApiCaller";
 
 export const Login = () => {
@@ -21,7 +20,7 @@ export const Login = () => {
 
   //handlers
   const handleNavigateToSignUp = () => {
-    navigate("/signup");
+    navigate("/signup",true);
   };
   const handleLoginEmail = (e) => {
     setEmail(e.target.value);
